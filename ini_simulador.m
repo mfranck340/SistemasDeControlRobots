@@ -3,7 +3,7 @@ clear all;
 
 %% DECLARACIÓN DE SUBSCRIBERS
 %% Odometria
-sub_odom = rossubscriber('/robot0/odom', 'nav_msgs/Odometry'); 
+sub_odom = rossubscriber('/robot0/local_odom', 'nav_msgs/Odometry'); 
 
 %% Laser
 sub_laser = rossubscriber('/robot0/laser_1', 'sensor_msgs/LaserScan');
