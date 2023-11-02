@@ -6,9 +6,9 @@ clear all
 close all
 
 %%%%%%%%
-% PASO 1
+%% PASO 1
 % CARGAR EL MAPA
-load mi_mapa.mat 
+load OnlineSLAM_mapa.mat 
 
 fig = figure(1)
 show(map)
@@ -24,7 +24,7 @@ imwrite((1.-map.occupancyMatrix),'map_original.png')
 axis('on')
 
 %%%%%%%%
-% PASO 2
+%% PASO 2
 % EDITAR EL MAPA CON UN EDITOR Y GUARDAR EL MAPA_IMAGEN LIMPIADO
 % Editar con un editor de imagen (GIMP, PAINT ...) sin cambiar la
 % resolucion, ni el tamaño
@@ -36,7 +36,7 @@ axis('on')
 % PASO 3
 % CARGAR LA IMAGEN LIMPIADA 
 
-image = imread('map_limpio.png');
+image = imread('simple_rooms_limpio.png');
 
 % Unknown areas (gray) should be removed and treated as free space. Create
 % a logical matrix based on a threshold. Depending on your image, this value
@@ -50,7 +50,7 @@ image = imread('map_limpio.png');
 %%%%%
 
 %%%%%%%%
-% PASO 4
+%% PASO 4
 % CONVERTIR IMAGEN EN MAPA (occupancygrid) Y VISUALIZARLO
 
 image=image(:,:,1);  %Esta línea hay que comentarla si la imagen sólo tiene una componenente A x L x 1   
@@ -68,7 +68,7 @@ show(map_modified)
 
 
 %%%%%%%%
-% PASO 5
+%% PASO 5
 % GUARDAR MAPA LIMPIADO
 save map_modified.mat map_modified
 

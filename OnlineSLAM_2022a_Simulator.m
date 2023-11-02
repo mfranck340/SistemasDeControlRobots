@@ -78,7 +78,7 @@ while (1)
     waitfor(r);
 end
 
-% Plot the final built map after all scans are added to the |slamObj|
+%% Plot the final built map after all scans are added to the |slamObj|
 % object.
 show(slamObj, 'Poses', 'off'); 
 hold on;
