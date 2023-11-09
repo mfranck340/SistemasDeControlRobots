@@ -2,7 +2,7 @@ close all;
 clear all;
 
 %% INICIALIZACIÓN DE ROS
-rosinit('http://172.29.29.88:11311' , 'NodeHost' , '172.29.29.82');
+rosinit('http://172.29.29.74:11311' , 'NodeHost' , '172.29.29.64');
 
 %rosinit('http://172.29.30.177:11311' , 'NodeHost' , '172.29.29.55');
 
