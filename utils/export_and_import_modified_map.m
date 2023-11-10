@@ -36,7 +36,7 @@ axis('on')
 % PASO 3
 % CARGAR LA IMAGEN LIMPIADA 
 
-image = imread('./map_original.png');
+image = imread('./mapas/imagenes/map_limpio.png');
 
 % Unknown areas (gray) should be removed and treated as free space. Create
 % a logical matrix based on a threshold. Depending on your image, this value
@@ -70,7 +70,7 @@ show(map_modified)
 %%%%%%%%
 %% PASO 5
 % GUARDAR MAPA LIMPIADO
-save ./mapas/map_pasillo.mat map_modified
+save ./mapas/map_pasillo_limpio.mat map_modified
 
 
 
