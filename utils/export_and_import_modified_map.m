@@ -8,7 +8,7 @@ close all
 %%%%%%%%
 %% PASO 1
 % CARGAR EL MAPA
-load OnlineSLAM_mapa.mat 
+load ./mapas/OnlineSLAM_pasillo.mat 
 
 fig = figure(1)
 show(map)
@@ -36,7 +36,7 @@ axis('on')
 % PASO 3
 % CARGAR LA IMAGEN LIMPIADA 
 
-image = imread('simple_rooms_limpio.png');
+image = imread('./map_original.png');
 
 % Unknown areas (gray) should be removed and treated as free space. Create
 % a logical matrix based on a threshold. Depending on your image, this value
@@ -70,7 +70,7 @@ show(map_modified)
 %%%%%%%%
 %% PASO 5
 % GUARDAR MAPA LIMPIADO
-save map_modified.mat map_modified
+save ./mapas/map_pasillo.mat map_modified
 
 
 
