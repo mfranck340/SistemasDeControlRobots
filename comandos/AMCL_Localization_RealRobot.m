@@ -48,7 +48,8 @@
 % or real. Refer to <docid:robotics_examples.example-MappingWithKnownPosesExample 
 % Mapping With Known Poses> for a more detailed explanation.
 
-load .\..\mapas\OnlineSLAM_pasillo.mat
+load .\..\mapas\map_pasillo_limpio.mat
+map = map_modified;
 show(map);
 %% Setup the laser sensor model and amigobot motion model
 % AmigoBot can be modeled as a differential drive robot and its motion can be 
@@ -158,7 +159,7 @@ amcl.ResamplingInterval = 1;
 % an example on using global localization.
 
 amcl.ParticleLimits = [500 50000];           % Minimum and maximum number of particles
-amcl.GlobalLocalization = true;      % global = true      local=false
+amcl.GlobalLocalization = false;      % global = true      local=false
 amcl.InitialPose = [0 0 0];              % Initial pose of vehicle   
 amcl.InitialCovariance = eye(3)*0.5; % Covariance of initial pose
 %% Setup helper for visualization and driving AmigoBot.
