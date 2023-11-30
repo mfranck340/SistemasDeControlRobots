@@ -36,9 +36,8 @@ msg_vel.Angular.Z = 0;
 %Bucle de control infinito
 while(1)
   %Leer y dibujar los datos del láser en la figura ‘fig_laser’   
-  leer_sensores;
   figure(fig_laser);
-  plot(msg_laser);
+  leer_sensores;
   scan = msg_laser.lidarScan;
 
   %Llamar al objeto VFH para obtener la dirección a seguir por el robot para
