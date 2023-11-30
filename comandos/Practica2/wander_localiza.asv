@@ -61,58 +61,34 @@ msg_vel.Angular.X = 0;
 msg_vel.Angular.Y = 0;
 msg_vel.Angular.Z = 0;
 
-% Umbrales
-umbralx = 0.1;
-umbraly = 0.1;
-umbralyaw = 0.1;
-
 %Bucle de control infinito
 while(1)
     %Leer y dibujar los datos del láser en la figura ‘fig_laser’
     figure(fig_laser);
     leer_sensores;
     scan = msg_laser.lidarScan;
-
-    targetDir = 0;
-    steeringDir = VFH(scan,targetDir);
     
     %Leer la odometría
     %Obtener la posición pose=[x,y,yaw] a partir de la odometría anterior
     %Ejecutar amcl para obtener la posición estimada estimatedPose y la
     %covarianza estimatedCovariance (mostrar la última por pantalla para
     %facilitar la búsqueda de un umbral)
-    odomQuat = [msg_odom.Pose.Pose.Orientation.W msg_odom.Pose.Pose.Orientation.X ...
-        msg_odom.Pose.Pose.Orientation.Y msg_odom.Pose.Pose.Orientation.Z];
-    odomRotation = quat2eul(odomQuat);
-    pose = [msg_odom.Pose.Pose.Position.X msg_odom.Pose.Pose.Position.Y odomRotation(1)];
-    [isUpdated,estimatedPose,estimatedCovariance] = amcl(pose,scan);
-    estimatedCovariance
-
     %Si la covarianza está por debajo de un umbral, el robot está localizado y
     %finaliza el programa
-    if (estimatedCovariance(1,1) < umbralx && estimatedCovariance(2,2) < umbraly && estimatedCovariance(3,3) < umbralyaw)
-        disp('Robot Localizado');
-        break;
+    if (estimatedCovariance(1,1) < umbralx && estimatedCovariance(2,2) < umbraly && ...
+         estimatedCovariance(3,3) < umbralyaw)
+    disp('Robot Localizado');
+    break;
     end
     %Dibujar los resultados del localizador con el visualizationHelper
     %Llamar al objeto VFH para obtener la dirección a seguir por el robot para
     %evitar los obstáculos. Mostrar los resultados del algoritmo (histogramas)
     %en la figura ‘fig_vfh’
-    if isUpdated
-        figure(fig_vfh);
-        [v,w] = VFH(scan,estimatedPose);
-        show(visualizationHelper,estimatedPose,scan);
-    end
     
     %Rellenar el campo de la velocidad angular del mensaje de velocidad con un
     %valor proporcional a la dirección anterior (K=0.1)
-    K = 0.1;
-    V_ang = K * steeringDir;
-    msg_vel.Angular.Z = V_ang;
     
     %Publicar el mensaje de velocidad
-    send(pub_vel,msg_vel);
-
+    
     %Esperar al siguiente periodo de muestreo
-    waitfor(r);
 end
