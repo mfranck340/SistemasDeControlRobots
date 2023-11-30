@@ -160,7 +160,7 @@ amcl.ResamplingInterval = 1;
 
 amcl.ParticleLimits = [500 50000];           % Minimum and maximum number of particles
 amcl.GlobalLocalization = false;      % global = true      local=false
-amcl.InitialPose = [0 0 0];              % Initial pose of vehicle   
+amcl.InitialPose = [18 0 0];              % Initial pose of vehicle   
 amcl.InitialCovariance = eye(3)*0.5; % Covariance of initial pose
 %% Setup helper for visualization and driving AmigoBot.
 % Setup ExampleHelperAMCLVisualization to plot the map and update robot's estimated 
