@@ -8,10 +8,10 @@ close all
 %%%%%%%%
 %% PASO 1
 % CARGAR EL MAPA
-load ./mapas/OnlineSLAM_pasillo.mat 
+load ./mapas/map_pasillo_limpio.mat 
 
 fig = figure(1)
-show(map)
+show(map_modified)
 
 axis('off')
 title('')
@@ -19,7 +19,7 @@ ylabel('')
 xlabel('')
 
 %GUARDAR EL MAPA COMO IMAGEN
-imwrite((1.-map.occupancyMatrix),'map_original.png')
+imwrite((1.-map_modified.occupancyMatrix),'map_original.png')
 
 axis('on')
 
