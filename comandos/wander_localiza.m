@@ -1,7 +1,9 @@
+close all;
+
 %Cargar el mapa
 %%%%%%%%%%%%%%%
 load ../mapas/map_simple_rooms.mat
-figure;
+map = map_modified;
 show(map);
 
 % Graficas
@@ -67,14 +69,18 @@ umbraly = 0.1;
 umbralyaw = 0.1;
 
 %Bucle de control infinito
+i = 1;
 while(1)
     %Leer y dibujar los datos del láser en la figura ‘fig_laser’
-    figure(fig_laser);
+    %figure(fig_laser);
     leer_sensores;
     scan = msg_laser.lidarScan;
 
     targetDir = 0;
     steeringDir = VFH(scan,targetDir);
+
+    %figure(fig_vfh);
+    %show(VFH);
     
     %Leer la odometría
     %Obtener la posición pose=[x,y,yaw] a partir de la odometría anterior
@@ -99,9 +105,8 @@ while(1)
     %evitar los obstáculos. Mostrar los resultados del algoritmo (histogramas)
     %en la figura ‘fig_vfh’
     if isUpdated
-        figure(fig_vfh);
-        [v,w] = VFH(scan,estimatedPose);
-        show(visualizationHelper,estimatedPose,scan);
+        i = i + 1;
+        plotStep(visualizationHelper, amcl, estimatedPose, scan, i);
     end
     
     %Rellenar el campo de la velocidad angular del mensaje de velocidad con un
