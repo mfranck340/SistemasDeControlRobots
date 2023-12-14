@@ -1,0 +1,51 @@
+%Crear el objeto PurePursuit y ajustar sus propiedades
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+controller=controllerPurePursuit;
+controller.LookaheadDistance = 0.1;
+controller.DesiredLinearVelocity= 3; 
+controller.MaxAngularVelocity = 0.5;
+%Rellenamos los campos por defecto de la velocidad del robot, para que la lineal
+%sea siempre 0.1 m/s
+%Bucle de control infinito
+
+
+
+
+%%%%%%%%%%% COMIENZA EL BUCLE DE CONTROL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Indicamos al controlador la lista de waypoints a recorrer (ruta)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+controller.Waypoints = ruta;
+%Bucle de control
+%%%%%%%%%%%%%%%%%
+Umbral_Dist = 0.01;
+
+while(1)
+    %Leer el láser y la odometría
+    
+    %Obtener la posición pose=[x,y,yaw] a partir de la odometría anterior
+    %Ejecutar amcl para obtener la posición estimada estimatedPose
+    %Dibujar los resultados del localizador con el visualizationHelper
+    %Ejecutar el controlador PurePursuit para obtener las velocidades lineal
+    %y angular
+    [lin_vel,ang_vel] = CONTROLLER(estimatedPose);
+
+    %Rellenar los campos del mensaje de velocidad
+    msg_vel.Linear.X = lin_vel;
+    msg_vel.Angular.Z = ang_vel;
+
+    %Publicar el mensaje de velocidad
+    send(pub_vel,msg_vel);
+    
+    %Comprobar si hemos llegado al destino, calculando la distancia euclidea
+    %y estableciendo un umbral
+    dist = 
+
+    if ()
+        %Parar el robot
+        break;
+    end
+    %Esperar al siguiente periodo de muestreo
+    waitfor(r);
+end
+
+
