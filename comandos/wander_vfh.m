@@ -26,7 +26,7 @@ VFH.UseLidarScan = true; %para permitir utilizar la notación del scan
 
 %Rellenamos los campos por defecto de la velocidad del robot, para que la lineal
 %sea siempre 0.1 m/s
-msg_vel.Linear.X = 0.1;
+msg_vel.Linear.X = 0.5;
 msg_vel.Linear.Y = 0;
 msg_vel.Linear.Z = 0;
 msg_vel.Angular.X = 0;
@@ -52,6 +52,12 @@ while(1)
   %valor proporcional a la dirección anterior (K=0.1)
   K = 0.1;
   V_ang = K * steeringDir;
+
+  if (V_ang ~= 0)
+      msg_vel.Linear.X = 0;
+  else
+      msg_vel.Linear.X = 0.5;
+  end
 
   %Publicar el mensaje de velocidad
   msg_vel.Angular.Z = V_ang;

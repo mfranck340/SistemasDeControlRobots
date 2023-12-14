@@ -4,7 +4,7 @@ close all;
 %%%%%%%%%%%%%%%
 load ../mapas/map_simple_rooms.mat
 map = map_modified;
-show(map);
+%show(map);
 
 % Graficas
 fig_laser = figure; title('LASER');
@@ -48,7 +48,7 @@ amcl.MotionModel = odometryModel;
 amcl.SensorModel = rangeFinderModel;
 amcl.UpdateThresholds = [0.2,0.2,0.2];
 amcl.ResamplingInterval = 1;
-amcl.ParticleLimits = [500 50000];          % Minimum and maximum number of particles
+amcl.ParticleLimits = [10000 50000];          % Minimum and maximum number of particles
 amcl.GlobalLocalization = true;             % global = true      local=false
 amcl.InitialPose = [2.5 -4 0];                 % Initial pose of vehicle   
 amcl.InitialCovariance = eye(3)*0.5; % Covariance of initial pose
@@ -56,28 +56,27 @@ visualizationHelper = ExampleHelperAMCLVisualization(map);
 
 %Rellenamos los campos por defecto de la velocidad del robot, para que la lineal
 %sea siempre 0.1 m/s
-msg_vel.Linear.X = 0.1;
+msg_vel.Linear.X = 0.2;
 msg_vel.Linear.Y = 0;
 msg_vel.Linear.Z = 0;
 msg_vel.Angular.X = 0;
 msg_vel.Angular.Y = 0;
 msg_vel.Angular.Z = 0;
 
+targetDir = 0;
+
 % Umbrales
-umbralx = 0.1;
-umbraly = 0.1;
-umbralyaw = 0.1;
+umbralx = 0.01;
+umbraly = 0.01;
+umbralyaw = 0.001;
 
 %Bucle de control infinito
 i = 1;
 while(1)
     %Leer y dibujar los datos del láser en la figura ‘fig_laser’
-    %figure(fig_laser);
+    figure(fig_laser);
     leer_sensores;
     scan = msg_laser.lidarScan;
-
-    targetDir = 0;
-    steeringDir = VFH(scan,targetDir);
 
     %figure(fig_vfh);
     %show(VFH);
@@ -109,11 +108,21 @@ while(1)
         plotStep(visualizationHelper, amcl, estimatedPose, scan, i);
     end
     
+    steeringDir = VFH(scan,targetDir);
+    figure(fig_vfh);
+    show(VFH);
+
     %Rellenar el campo de la velocidad angular del mensaje de velocidad con un
     %valor proporcional a la dirección anterior (K=0.1)
     K = 0.1;
     V_ang = K * steeringDir;
     msg_vel.Angular.Z = V_ang;
+
+    if (V_ang ~= 0)
+        msg_vel.Linear.X = 0;
+    else
+        msg_vel.Linear.X = 0.2;
+    end
     
     %Publicar el mensaje de velocidad
     send(pub_vel,msg_vel);
