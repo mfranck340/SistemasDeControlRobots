@@ -1,10 +1,13 @@
 close all;
 
+%Definir la posicion de destino
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+endLocation = [14 4];
+startLocation = [1 -4];
 %Cargar el mapa
 %%%%%%%%%%%%%%%
 load ../mapas/map_simple_rooms.mat
 map = map_modified;
-show(map);
 
 % Graficas
 fig_laser = figure; title('LASER');
@@ -48,10 +51,11 @@ amcl.MotionModel = odometryModel;
 amcl.SensorModel = rangeFinderModel;
 amcl.UpdateThresholds = [0.2,0.2,0.2];
 amcl.ResamplingInterval = 1;
-amcl.ParticleLimits = [10000 50000];          % Minimum and maximum number of particles
+amcl.ParticleLimits = [5000 50000];          % Minimum and maximum number of particles
 amcl.GlobalLocalization = true;             % global = true      local=false
 amcl.InitialPose = [2.5 -4 0];                 % Initial pose of vehicle   
 amcl.InitialCovariance = eye(3)*0.5; % Covariance of initial pose
+
 visualizationHelper = ExampleHelperAMCLVisualization(map);
 
 %Rellenamos los campos por defecto de la velocidad del robot, para que la lineal
@@ -69,7 +73,7 @@ targetDir = 0;
 umbralx = 0.01;
 umbraly = 0.01;
 umbralyaw = 0.01;
-
+%%
 %Bucle de control infinito
 i = 1;
 while(1)
@@ -117,6 +121,12 @@ while(1)
     K = 0.1;
     V_ang = K * steeringDir;
     msg_vel.Angular.Z = V_ang;
+
+    if (V_ang ~= 0)
+        msg_vel.Linear.X = 0;
+    else
+        msg_vel.Linear.X = 0.1;
+    end
     
     %Publicar el mensaje de velocidad
     send(pub_vel,msg_vel);
@@ -124,3 +134,23 @@ while(1)
     %Esperar al siguiente periodo de muestreo
     waitfor(r);
 end
+%%
+leer_sensores;
+startLocation = [msg_odom.Pose.Pose.Position.X msg_odom.Pose.Pose.Position.Y];
+%%%%%%%%%%% AL SALIR DE ESTE BUCLE EL ROBOT YA SE HA LOCALIZADO %%%%%%%%%%
+%%%%%%%%%%% COMIENZA LA PLANIFICACIÓN GLOBAL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Paramos el robot, para que no avance mientras planificamos
+%Hacemos una copia del mapa, para “inflarlo” antes de planificar
+cpMap = copy(map);
+inflate(cpMap,0.25);
+%Crear el objeto PRM y ajustar sus parámetros
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+planner = mobileRobotPRM;
+planner.Map = cpMap;
+planner.NumNodes = 1000;
+planner.ConnectionDistance = 3;
+%Obtener la ruta hacia el destino desde la posición actual del robot y mostrarla
+%en una figura
+ruta = findpath(planner, startLocation, endLocation);
+figure;
+show(planner);
