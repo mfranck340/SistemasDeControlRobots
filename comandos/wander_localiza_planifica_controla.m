@@ -2,8 +2,8 @@ close all;
 
 %Definir la posicion de destino
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-endLocation = [14 4];
-startLocation = [1 -4];
+endLocation = [9 4];
+
 %Cargar el mapa
 %%%%%%%%%%%%%%%
 load ../mapas/map_simple_rooms.mat
@@ -76,89 +76,108 @@ umbralyaw = 0.01;
 
 leer_sensores;
 startLocation = [msg_odom.Pose.Pose.Position.X msg_odom.Pose.Pose.Position.Y];
+
 %%%%%%%%%%% AL SALIR DE ESTE BUCLE EL ROBOT YA SE HA LOCALIZADO %%%%%%%%%%
 %%%%%%%%%%% COMIENZA LA PLANIFICACIÓN GLOBAL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %Paramos el robot, para que no avance mientras planificamos
+msg_vel.Linear.X = 0;
+msg_vel.Angular.Z = 0;
+send(pub_vel, msg_vel);
+
+%%%%%%%%%%% AL SALIR DE ESTE BUCLE EL ROBOT YA SE HA LOCALIZADO %%%%%%%%%%
+%%%%%%%%%%% COMIENZA LA PLANIFICACIÓN GLOBAL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Posiciones
+%startLocation = [estimatedPose(1), estimatedPose(2)];
+
+%Crear el objeto PurePursuit y ajustar sus propiedades
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+controller = controllerPurePursuit;
+controller.LookaheadDistance = 3;
+controller.DesiredLinearVelocity = 0.1;
+controller.MaxAngularVelocity = 0.5;
 %Hacemos una copia del mapa, para “inflarlo” antes de planificar
 cpMap = copy(map);
-inflate(cpMap,0.25);
+inflate(cpMap, 0.4);
+
 %Crear el objeto PRM y ajustar sus parámetros
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 planner = mobileRobotPRM;
 planner.Map = cpMap;
-planner.NumNodes = 1000;
-planner.ConnectionDistance = 3;
+planner.NumNodes = 4000;
+planner.ConnectionDistance = 2;
+
 %Obtener la ruta hacia el destino desde la posición actual del robot y mostrarla
 %en una figura
 ruta = findpath(planner, startLocation, endLocation);
 figure;
 show(planner);
-%%
-%Crear el objeto PurePursuit y ajustar sus propiedades
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-controller = controllerPurePursuit;
-controller.LookaheadDistance = 3;
-controller.DesiredLinearVelocity = 0.1; 
-controller.MaxAngularVelocity = 0.5;
-%Rellenamos los campos por defecto de la velocidad del robot, para que la lineal
-%sea siempre 0.1 m/s
-%Bucle de control infinito
-
-
-
 
 %%%%%%%%%%% COMIENZA EL BUCLE DE CONTROL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Indicamos al controlador la lista de waypoints a recorrer (ruta)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 controller.Waypoints = ruta;
+
 %Bucle de control
 %%%%%%%%%%%%%%%%%
-umbral_dist = 0.1;
+umbral_dist = 0.2;
+k1 = 0.8;
+k2 = 0.6;
 
-visualizationHelper = ExampleHelperAMCLVisualization(map);
-
-i = 1;
 while(1)
-    %Leer el láser y la odometría
-    %figure(fig_laser);
+    % Leer el láser y la odometría
+    figure(fig_laser);
     leer_sensores;
     scan = msg_laser.lidarScan;
 
-    %Obtener la posición pose=[x,y,yaw] a partir de la odometría anterior
+    % Obtener la posición pose=[x,y,yaw] a partir de la odometría anterior
     odomQuat = [msg_odom.Pose.Pose.Orientation.W msg_odom.Pose.Pose.Orientation.X ...
         msg_odom.Pose.Pose.Orientation.Y msg_odom.Pose.Pose.Orientation.Z];
     odomRotation = quat2eul(odomQuat);
     pose = [msg_odom.Pose.Pose.Position.X msg_odom.Pose.Pose.Position.Y odomRotation(1)];
 
-    %Ejecutar amcl para obtener la posición estimada estimatedPose
+    % Ejecutar amcl para obtener la posición estimada estimatedPose
     [isUpdated, estimatedPose, estimatedCovariance] = amcl(pose,scan);
 
     %Dibujar los resultados del localizador con el visualizationHelper
-    if isUpdated
-        i = i + 1;
-        plotStep(visualizationHelper, amcl, estimatedPose, scan, i);
-    end
 
-    %Ejecutar el controlador PurePursuit para obtener las velocidades lineal
-    %y angular
+    % Ejecutar el controlador PurePursuit para obtener las velocidades lineal
+    % y angular
     [lin_vel,ang_vel] = controller(estimatedPose);
 
-    %Rellenar los campos del mensaje de velocidad
-    msg_vel.Linear.X = lin_vel;
-    msg_vel.Angular.Z = ang_vel;
+    % Llamar a VFH pasándole como "targetDir” un valor proporcional a la
+    % velocidad angular calculada por el PurePursuit
+    targetdir = k1 * ang_vel;
+    direccion = VFH(scan, targetdir);
+    ang_vel_vfh = k2 * direccion;
 
-    %Publicar el mensaje de velocidad
+    figure(fig_vfh);
+    show(VFH);
+    
+    % Calcular la velocidad angular final como una combinación lineal de la
+    % generada por el controlador PurePursuit y la generada por VFH
+    ang_vel_final = ang_vel + ang_vel_vfh;
+
+    % Rellenar los campos del mensaje de velocidad
+    msg_vel.Linear.X = lin_vel;
+    msg_vel.Angular.Z = ang_vel_final;
+
+    % Publicar el mensaje de velocidad
     send(pub_vel,msg_vel);
     
-    %Comprobar si hemos llegado al destino, calculando la distancia euclidea
-    %y estableciendo un umbral
-    dist = sqrt((estimatedPose(1)-ruta(end,1))^2 + (estimatedPose(2)-ruta(end,2))^2); 
-
+    % Comprobar si hemos llegado al destino, calculando la distancia euclidea
+    % y estableciendo un umbral
+    dist = sqrt((estimatedPose(1) - endLocation(1))^2 + (estimatedPose(2) - endLocation(2))^2); 
     if (dist < umbral_dist)
-        %Parar el robot
+        % Parar el robot
+        msg_vel.Linear.X = 0;
+        msg_vel.Angular.Z = 0;
+        send(pub_vel, msg_vel);
         break;
     end
 
-    %Esperar al siguiente periodo de muestreo
+    % Esperar al siguiente periodo de muestreo
     waitfor(r);
 end
+
+disp('Navegación completada')

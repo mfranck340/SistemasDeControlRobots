@@ -17,9 +17,9 @@ VFH = controllerVFH;
 %y ajustamos sus propiedades
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 VFH.NumAngularSectors = 180;
-VFH.DistanceLimits = [0.05 2];
+VFH.DistanceLimits = [0.2 3];
 VFH.RobotRadius = 0.15;
-VFH.SafetyDistance = 0.2;
+VFH.SafetyDistance = 0.3;
 VFH.MinTurningRadius = 0.1;
 VFH.TargetDirectionWeight = 5;
 VFH.CurrentDirectionWeight = 2;
@@ -49,7 +49,7 @@ amcl.MotionModel = odometryModel;
 amcl.SensorModel = rangeFinderModel;
 amcl.UpdateThresholds = [0.2,0.2,0.2];
 amcl.ResamplingInterval = 1;
-amcl.ParticleLimits = [500 50000];          % Minimum and maximum number of particles
+amcl.ParticleLimits = [7000 50000];          % Minimum and maximum number of particles
 amcl.GlobalLocalization = true;             % global = true      local=false
 amcl.InitialPose = [0 0 0];                 % Initial pose of vehicle   
 amcl.InitialCovariance = eye(3) * 0.5; % Covariance of initial pose
@@ -69,7 +69,7 @@ send(pub_vel, msg_vel);
 % Umbrales
 u_x = 0.015;
 u_y = 0.015;
-u_yaw = 0.05;
+u_yaw = 0.03;
 
 target_dir = 0;
 
@@ -146,7 +146,7 @@ endLocation = [9 4];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 controller = controllerPurePursuit;
 controller.LookaheadDistance = 3;
-controller.DesiredLinearVelocity = 0.1; 
+controller.DesiredLinearVelocity = 0.1;
 controller.MaxAngularVelocity = 0.5;
 
 %Hacemos una copia del mapa, para “inflarlo” antes de planificar
@@ -157,7 +157,7 @@ inflate(cpMap, 0.4);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 planner = mobileRobotPRM;
 planner.Map = cpMap;
-planner.NumNodes = 3000;
+planner.NumNodes = 4000;
 planner.ConnectionDistance = 2;
 
 %Obtener la ruta hacia el destino desde la posición actual del robot y mostrarla
@@ -174,8 +174,8 @@ controller.Waypoints = ruta;
 %Bucle de control
 %%%%%%%%%%%%%%%%%
 umbral_dist = 0.2;
-k1 = 1;
-k2 = 0.5;
+k1 = 0.8;
+k2 = 0.6;
 
 while(1)
     % Leer el láser y la odometría
@@ -206,7 +206,7 @@ while(1)
     % velocidad angular calculada por el PurePursuit
     targetdir = k1 * ang_vel;
     direccion = VFH(scan, targetdir);
-    ang_vel_vfh = k2 * direccion;
+    ang_vel_vfh = k2 * direccion
 
     figure(fig_vfh);
     show(VFH);
