@@ -19,9 +19,9 @@ VFH = controllerVFH;
 %y ajustamos sus propiedades
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 VFH.NumAngularSectors = 180;
-VFH.DistanceLimits = [0.05 3];
+VFH.DistanceLimits = [0.2 3];
 VFH.RobotRadius = 0.15;
-VFH.SafetyDistance = 0.1;
+VFH.SafetyDistance = 0.3;
 VFH.MinTurningRadius = 0.1;
 VFH.TargetDirectionWeight = 5;
 VFH.CurrentDirectionWeight = 2;
@@ -93,7 +93,7 @@ send(pub_vel, msg_vel);
 %Crear el objeto PurePursuit y ajustar sus propiedades
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 controller = controllerPurePursuit;
-controller.LookaheadDistance = 2;
+controller.LookaheadDistance = 3;
 controller.DesiredLinearVelocity = 0.1;
 controller.MaxAngularVelocity = 0.5;
 %Hacemos una copia del mapa, para “inflarlo” antes de planificar
@@ -104,8 +104,8 @@ inflate(cpMap, 0.4);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 planner = mobileRobotPRM;
 planner.Map = cpMap;
-planner.NumNodes = 1000;
-planner.ConnectionDistance = 3;
+planner.NumNodes = 4000;
+planner.ConnectionDistance = 2;
 
 %Obtener la ruta hacia el destino desde la posición actual del robot y mostrarla
 %en una figura
@@ -121,8 +121,8 @@ controller.Waypoints = ruta;
 %Bucle de control
 %%%%%%%%%%%%%%%%%
 umbral_dist = 0.2;
-k1 = 0.1;
-k2 = 0.2;
+k1 = 0.4;
+k2 = 0.45;
 
 while(1)
     % Leer el láser y la odometría
