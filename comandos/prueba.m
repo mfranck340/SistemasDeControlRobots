@@ -135,7 +135,7 @@ msg_vel.Angular.Z = 0;
 send(pub_vel, msg_vel);
 
 disp(estimatedPose)
-
+%%
 %%%%%%%%%%% AL SALIR DE ESTE BUCLE EL ROBOT YA SE HA LOCALIZADO %%%%%%%%%%
 %%%%%%%%%%% COMIENZA LA PLANIFICACIÓN GLOBAL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Posiciones
